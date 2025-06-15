@@ -340,9 +340,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_ajax_handle_request) {
                 if ($e->getCode() == 23000) { $response['message'] = 'اسم هذا الدور مستخدم بالفعل.'; } else { $response['message'] = 'Error: ' . $e->getMessage(); }
             }
         }
+
+        // --- Users AJAX Handler (النسخة المطورة) ---
         elseif ($page === 'users/handle_add_ajax' || $page === 'users/handle_edit_ajax') {
             $is_add = ($page === 'users/handle_add_ajax');
-            if (($is_add && !has_permission('add_user')) || (!$is_add && !has_permission('edit_user'))) { $response['message'] = 'ليس لديك الصلاحية الكافية.'; throw new Exception('Permission denied.'); }
+            
+            // 1. التحقق من الصلاحيات
+            if (($is_add && !has_permission('add_user')) || (!$is_add && !has_permission('edit_user'))) {
+                $response['message'] = 'ليس لديك الصلاحية الكافية.'; throw new Exception('Permission denied.');
+            }
+
+            // 2. حفظ/تحديث بيانات المستخدم الأساسية
             if ($is_add) {
                 $password_hash = password_hash($_POST['password'], PASSWORD_DEFAULT);
                 $sql = "INSERT INTO users (full_name, username, email, mobile, password, role_id) VALUES (?, ?, ?, ?, ?, ?)";
@@ -359,7 +367,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_ajax_handle_request) {
                 }
             }
             $stmt = $pdo->prepare($sql);
-            if ($stmt->execute($params)) $response = ['success' => true];
+            $stmt->execute($params);
+
+            // 3. تحديد ID المستخدم
+            $user_id = $is_add ? $pdo->lastInsertId() : $_POST['id'];
+
+            // 4. تحديث العلاقات مع الفروع (هذا المنطق يعمل فقط في حالة التعديل)
+            if (!$is_add) {
+                $selected_branches = $_POST['branches'] ?? [];
+
+                // أولاً، نحذف كل العلاقات القديمة للمستخدم
+                $delete_stmt = $pdo->prepare("DELETE FROM user_branches WHERE user_id = ?");
+                $delete_stmt->execute([$user_id]);
+
+                // ثانيًا، نضيف العلاقات الجديدة إذا تم اختيار أي فروع
+                if (!empty($selected_branches)) {
+                    $insert_sql = "INSERT INTO user_branches (user_id, branch_id) VALUES (?, ?)";
+                    $insert_stmt = $pdo->prepare($insert_sql);
+                    foreach ($selected_branches as $branch_id) {
+                        $insert_stmt->execute([$user_id, $branch_id]);
+                    }
+                }
+            }
+            
+            // 5. إرسال رد النجاح
+            $response = ['success' => true];
         }
 
         $pdo->commit();
