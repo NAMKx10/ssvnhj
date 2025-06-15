@@ -25,6 +25,8 @@ $branches_for_filter = $branches_for_filter_stmt->fetchAll();
 // 2. بناء الاستعلام الديناميكي
 // =================================================================
 $sql_where = " WHERE c.deleted_at IS NULL ";
+// --- تطبيق فلتر الفروع التلقائي بناءً على صلاحيات المستخدم ---
+$sql_where .= build_branches_query_condition('p', $params);
 $params = [];
 
 if (!empty($filter_q)) {
