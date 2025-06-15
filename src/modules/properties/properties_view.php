@@ -81,14 +81,14 @@ $stats_stmt = $pdo->prepare($stats_sql);
 $stats_stmt->execute($params);
 $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
 
-// استعلام إحصائيات الوحدات (يشمل الربط أيضًا)
+// استعلام إحصائيات الوحدات (النسخة المصححة)
 $units_count_sql = "
     SELECT COUNT(u.id) 
     FROM units u 
     JOIN properties p ON u.property_id = p.id
-    LEFT JOIN branches b ON p.branch_id = b.id 
     {$sql_where} AND u.deleted_at IS NULL
 ";
+
 $units_count_stmt = $pdo->prepare($units_count_sql);
 $units_count_stmt->execute($params);
 $stats['total_units_count'] = $units_count_stmt->fetchColumn();
