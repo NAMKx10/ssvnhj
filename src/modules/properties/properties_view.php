@@ -37,6 +37,8 @@ $sql_from_joins = "
 
 // --- الخطوة 2: بناء شروط الفلترة (WHERE) ---
 $sql_where = " WHERE p.deleted_at IS NULL ";
+// --- تطبيق فلتر الفروع التلقائي بناءً على صلاحيات المستخدم ---
+$sql_where .= build_branches_query_condition('p', $params);
 $params = [];
 
 if (!empty($filter_q)) {
