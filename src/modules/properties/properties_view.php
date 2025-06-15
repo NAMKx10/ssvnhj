@@ -1,9 +1,9 @@
 <?php
 // =================================================================
-// ملف عرض العقارات - النسخة النهائية والصحيحة تماماً (v5)
+// ملف عرض العقارات (properties_view.php) - النسخة النهائية المصححة
 // =================================================================
 
-// 1. إعدادات الترقيم والفرز والبحث
+// 1. إعدادات الترقيم والفلترة
 // -----------------------------------------------------------------
 $records_per_page_options = [10, 25, 50, 100];
 $default_records_per_page = 10;
@@ -12,83 +12,53 @@ $filter_q = $_GET['q'] ?? null;
 $filter_type = $_GET['type'] ?? null;
 $filter_ownership = $_GET['ownership'] ?? null;
 $filter_status = $_GET['status'] ?? null;
-$filter_branch_id = $_GET['branch_id'] ?? null; // <-- متغير الفلتر الجديد
+$filter_branch_id = $_GET['branch_id'] ?? null;
 $limit = isset($_GET['limit']) && in_array($_GET['limit'], $records_per_page_options) ? (int)$_GET['limit'] : $default_records_per_page;
 $current_page = isset($_GET['p']) ? (int)$_GET['p'] : 1;
 $offset = ($current_page - 1) * $limit;
 
+// جلب الفروع للفلترة
+$branches_for_filter_stmt = $pdo->query("SELECT id, branch_name FROM branches WHERE deleted_at IS NULL ORDER BY branch_name ASC");
+$branches_for_filter = $branches_for_filter_stmt->fetchAll();
 $property_types_stmt = $pdo->prepare("SELECT option_value FROM lookup_options WHERE group_key = ? AND group_key != option_key AND deleted_at IS NULL ORDER BY display_order, option_value ASC");
 $property_types_stmt->execute(['property_type']);
 $property_types_for_filter = $property_types_stmt->fetchAll(PDO::FETCH_COLUMN);
-// --- جلب الفروع للفلترة ---
-$branches_stmt = $pdo->query("SELECT id, branch_name FROM branches WHERE deleted_at IS NULL ORDER BY branch_name ASC");
-$branches_for_filter = $branches_stmt->fetchAll();
 
-/// =================================================================
-// 2. بناء الاستعلام الديناميكي (النسخة المصححة)
 // =================================================================
-
-// --- الخطوة 1: تعريف الجداول الأساسية والربط (JOIN) ---
-// نعرّف الربط هنا أولاً ليصبح b.branch_name متاحًا للبحث والفرز
+// 2. بناء الاستعلام الديناميكي (النسخة الموحدة)
+// =================================================================
 $sql_from_joins = "
     FROM properties p
     LEFT JOIN branches b ON p.branch_id = b.id
 ";
-
-// --- الخطوة 2: بناء شروط الفلترة (WHERE) ---
 $sql_where = " WHERE p.deleted_at IS NULL ";
-// --- تطبيق فلتر الفروع التلقائي بناءً على صلاحيات المستخدم ---
-$sql_where .= build_branches_query_condition('p', $params);
 $params = [];
 
+// تطبيق فلتر الفروع التلقائي أولاً
+$sql_where .= build_branches_query_condition('p', $params);
+
+// تطبيق بقية الفلاتر
 if (!empty($filter_q)) {
     $search_term = '%' . $filter_q . '%';
-    // الآن يمكننا استخدام b.branch_name بأمان لأن JOIN تمت تعريفها
-    $sql_where .= " AND (p.property_name LIKE ? OR p.property_code LIKE ? OR p.owner_name LIKE ? OR p.deed_number LIKE ? OR b.branch_name LIKE ?) ";
-    array_push($params, $search_term, $search_term, $search_term, $search_term, $search_term);
+    $sql_where .= " AND (p.property_name LIKE ? OR p.property_code LIKE ? OR b.branch_name LIKE ?) ";
+    array_push($params, $search_term, $search_term, $search_term);
 }
-if (!empty($filter_type)) {
-    $sql_where .= " AND p.property_type = ? ";
-    $params[] = $filter_type;
-}
-if (!empty($filter_ownership)) {
-    $sql_where .= " AND p.ownership_type = ? ";
-    $params[] = $filter_ownership;
-}
-if (!empty($filter_status)) {
-    $sql_where .= " AND p.status = ? ";
-    $params[] = $filter_status;
-}
-// إضافة فلتر الفرع الذي أضفناه سابقًا
-if (!empty($filter_branch_id)) {
-    $sql_where .= " AND p.branch_id = ? ";
-    $params[] = $filter_branch_id;
-}
+if (!empty($filter_type)) { $sql_where .= " AND p.property_type = ? "; $params[] = $filter_type; }
+if (!empty($filter_ownership)) { $sql_where .= " AND p.ownership_type = ? "; $params[] = $filter_ownership; }
+if (!empty($filter_status)) { $sql_where .= " AND p.status = ? "; $params[] = $filter_status; }
+if (!empty($filter_branch_id)) { $sql_where .= " AND p.branch_id = ? "; $params[] = $filter_branch_id; }
 
 // =================================================================
-// 3. حساب الإحصائيات والإجمالي (النسخة المصححة)
+// 3. حساب الإحصائيات والإجمالي
 // =================================================================
-$stats_sql = "
-    SELECT 
-        COUNT(p.id) AS total_count, 
-        SUM(p.property_value) AS total_value, 
-        SUM(p.area) AS total_area
-    FROM properties p
-    LEFT JOIN branches b ON p.branch_id = b.id
-    {$sql_where}
-";
+// استعلام إحصائيات العقارات
+$stats_sql = "SELECT COUNT(p.id) AS total_count, SUM(p.property_value) AS total_value, SUM(p.area) AS total_area {$sql_from_joins} {$sql_where}";
 $stats_stmt = $pdo->prepare($stats_sql);
 $stats_stmt->execute($params);
 $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
 
-// استعلام إحصائيات الوحدات (النسخة المصححة)
-$units_count_sql = "
-    SELECT COUNT(u.id) 
-    FROM units u 
-    JOIN properties p ON u.property_id = p.id
-    {$sql_where} AND u.deleted_at IS NULL
-";
-
+// استعلام إحصائيات الوحدات
+$units_count_sql = "SELECT COUNT(u.id) FROM units u JOIN properties p ON u.property_id = p.id LEFT JOIN branches b ON p.branch_id = b.id {$sql_where} AND u.deleted_at IS NULL";
 $units_count_stmt = $pdo->prepare($units_count_sql);
 $units_count_stmt->execute($params);
 $stats['total_units_count'] = $units_count_stmt->fetchColumn();
@@ -100,14 +70,10 @@ $total_pages = ceil($total_records / $limit);
 // =================================================================
 // 4. جلب سجلات الصفحة الحالية
 // =================================================================
-// --- تعديل استعلام جلب البيانات ليشمل اسم الفرع ---
 $data_sql = "
-    SELECT p.*, 
-           b.branch_code,
-           (SELECT COUNT(*) FROM units u WHERE u.property_id = p.id AND u.deleted_at IS NULL) as units_count
-    FROM properties p
-    LEFT JOIN branches b ON p.branch_id = b.id
-    " . $sql_where . " 
+    SELECT p.*, b.branch_code, (SELECT COUNT(*) FROM units u WHERE u.property_id = p.id AND u.deleted_at IS NULL) as units_count
+    {$sql_from_joins}
+    {$sql_where}
     ORDER BY p.id DESC 
     LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
