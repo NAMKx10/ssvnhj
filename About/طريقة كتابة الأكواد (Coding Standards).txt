@@ -1,0 +1,91 @@
+ممتاز. ننتقل الآن إلى وضع "دستور البرمجة" الخاص بالمشروع.
+
+هذه النقطة حيوية جدًا لضمان أن الكود الذي نكتبه اليوم يمكن أن يقرأه ويفهمه ويطوره أي شخص (بما فيهم نحن) في المستقبل. الاتساق في الأسلوب هو مفتاح الصيانة والتطوير السلس.
+
+---
+
+### **مسودة: معايير كتابة الأكواد (Coding Standards)**
+
+---
+
+**المقدمة:** هذه الوثيقة تحدد مجموعة القواعد والمعايير الرسمية لكتابة أكواد PHP, HTML, و JavaScript في المشروع. الالتزام بهذه المعايير **إلزامي** لضمان أن تكون قاعدة الكود (Codebase) نظيفة، متسقة، سهلة القراءة، وآمنة.
+
+---
+
+### **1. أسلوب التسمية الموحد (Naming Conventions)**
+
+| العنصر | الأسلوب المعتمد | مثال |
+| :--- | :--- | :--- |
+| **الكلاسات (Classes)** | **PascalCase** | `PropertyModel`, `DashboardController` |
+| **الدوال (Functions/Methods)** | **snake_case** | `get_all_properties()`, `calculate_total_rent()` |
+| **المتغيرات (Variables)** | **snake_case** | `$property_list`, `$total_amount` |
+| **ثوابت الكلاس (Constants)** | **UPPER_SNAKE_CASE** | `const MIN_PASSWORD_LENGTH = 8;` |
+| **ملفات الكلاسات** | **PascalCase.php** | `PropertyModel.php`, `DashboardController.php` |
+| **ملفات الواجهات (Views)** | **snake_case.php** | `property_list.php`, `add_new_user.php` |
+| **ملفات الإعدادات** | **snake_case.php**| `database.php` |
+| **جداول قاعدة البيانات**| **plural_snake_case** | `rental_contracts`, `payment_schedules` |
+| **أعمدة قاعدة البيانات**| **snake_case** | `property_name`, `due_date` |
+
+---
+
+### **2. طريقة كتابة التعليقات والتوثيق (Commenting & Documentation)**
+
+*   **الهدف:** يجب أن يشرح التعليق **"لماذا"** تم كتابة الكود بهذه الطريقة، وليس **"ماذا"** يفعله الكود (فالكود الجيد يشرح نفسه).
+
+*   **توثيق الدوال والكلاسات (PHPDoc):**
+    *   **إلزامي:** كل كلاس وكل دالة يجب أن يسبقها بلوك توثيقي (DocBlock) يشرح وظيفتها، المدخلات التي تتوقعها (Parameters)، والمخرجات التي تُرجعها (Return value).
+    *   **مثال:**
+        ```php
+        /**
+         * Calculates the total remaining balance for a given contract.
+         *
+         * @param int   $contract_id The ID of the contract.
+         * @param float $total_amount The total amount of the contract.
+         * @return float The calculated remaining balance.
+         */
+        function get_remaining_balance(int $contract_id, float $total_amount): float
+        {
+            // ... function logic here
+        }
+        ```
+
+*   **التعليقات داخل الكود (Inline Comments):**
+    *   تُستخدم لشرح الأجزاء المعقدة أو غير البديهية في الكود.
+    *   يجب أن تكون قصيرة، واضحة، ومباشرة.
+    *   **مثال:**
+        ```php
+        // We add one day to the end date to include the final day in the calculation.
+        $end_date->modify('+1 day');
+        ```
+
+*   **علامات `TODO` و `FIXME`:**
+    *   `// TODO:` تُستخدم للإشارة إلى ميزة مستقبلية يجب إضافتها في هذا المكان.
+    *   `// FIXME:` تُستخدم للإشارة إلى مشكلة معروفة في الكود تحتاج إلى إصلاح.
+
+---
+
+### **3. معايير الأمان (Security Standards)**
+
+*   **المبدأ:** "لا تثق أبدًا بمدخلات المستخدم" (Never Trust User Input).
+
+*   **1. التحقق من المدخلات (Input Validation):**
+    *   **إلزامي:** يجب التحقق من صحة **كل** البيانات القادمة من المستخدم (من نماذج `$_POST` أو روابط `$_GET`) في طبقة المتحكم (Controller) **قبل** تمريرها إلى النموذج (Model) أو قاعدة البيانات.
+    *   **الأداة:** سيتم استخدام خدمة التحقق المدمجة في CodeIgniter 4 (`$this->validate()`).
+
+*   **2. الحماية من SQL Injection:**
+    *   **إلزامي:** **يمنع منعًا باتًا** كتابة استعلامات SQL تحتوي على متغيرات مباشرة.
+    *   **الأداة:** يجب استخدام **Query Builder** المدمج في CodeIgniter 4 أو **Prepared Statements (استعلامات مُعدة)** دائمًا. هذا يضمن أن يتم التعامل مع كل المدخلات كبيانات وليس كجزء من الاستعلام.
+
+*   **3. الحماية من XSS (Cross-Site Scripting):**
+    *   **إلزامي:** يجب **دائمًا** فلترة أي بيانات يتم طباعتها في الواجهة (View) قادمة من قاعدة البيانات أو المستخدم.
+    *   **الأداة:** سيتم استخدام دالة `esc()` المدمجة في CodeIgniter 4 عند طباعة أي متغير في ملفات الـ View. (مثال: `<?= esc($user->username) ?>`).
+
+*   **4. الحماية من CSRF (Cross-Site Request Forgery):**
+    *   **إلزامي:** يجب تفعيل فلتر CSRF المدمج في CodeIgniter 4. هذا سيقوم تلقائيًا بإضافة حقل مخفي لكل النماذج والتحقق منه عند الإرسال، مما يمنع الهجمات التي تتم من مواقع خارجية.
+
+*   **5. التحقق من الصلاحيات (Authorization):**
+    *   **إلزامي:** كما هو مذكور في المبادئ الحاكمة، يجب التحقق من صلاحية المستخدم لتنفيذ أي إجراء في بداية كل دالة متحكم (Controller method) حساسة.
+    *   **الأداة:** الدالة المساعدة `has_permission('...')`.
+
+---
+

@@ -1,0 +1,103 @@
+ ممتاز. وصلنا الآن إلى **أساس النظام الفعلي**: مخطط قاعدة البيانات. التصميم الصحيح هنا سيجعل كل شيء أسهل لاحقًا، بينما التصميم الخاطئ سيسبب مشاكل لا حصر لها في المستقبل.
+
+بناءً على خارطة الطريق التي اتفقنا عليها (التركيز على النواة الإدارية والكيانات أولاً)، سأقوم بتصميم مخطط أولي يغطي المراحل **0, 1, و 2**.
+
+---
+
+### **مسودة: مخطط قاعدة البيانات (Database Schema Design) - إصدار 1.0**
+
+---
+
+**فلسفة التصميم:**
+
+1.  **التسمية الموحدة:** أسماء الجداول ستكون بصيغة **الجمع** وباللغة الإنجليزية (e.g., `users`, `branches`). أسماء الأعمدة ستكون بـ `snake_case` (e.g., `full_name`, `created_at`).
+2.  **المفاتيح الأساسية:** كل جدول سيكون له مفتاح أساسي `id` من نوع `BIGINT`, `UNSIGNED`, `AUTO_INCREMENT`.
+3.  **العلاقات:** سيتم استخدام المفاتيح الخارجية (Foreign Keys) بشكل صريح لضمان تكامل البيانات (Data Integrity).
+4.  **الحذف الناعم (Soft Deletes):** كل جدول مهم سيحتوي على حقل `deleted_at` من نوع `TIMESTAMP NULLABLE` لتفعيل ميزة الأرشيف.
+5.  **التواريخ القياسية:** كل جدول سيحتوي على حقلي `created_at` و `updated_at` لتتبع التغييرات.
+6. **الملاحظات**: كل الجدوال أيضا ستحتوي على note حتى لو لم يتم ذكرها لان الملاحظات شي أساسي في كل معلومة او مدخل
+
+---
+
+### **القسم الأول: جداول النواة الإدارية (Admin Core Tables)**
+
+**1. جدول `users` (المستخدمون)**
+*   `id` (PK)
+*   `branch_id` (FK to branches.id) - الفرع الافتراضي للمستخدم.
+*   `role_id` (FK to roles.id)
+*   `full_name` (VARCHAR)
+*   `username` (VARCHAR, UNIQUE)
+*   `email` (VARCHAR, UNIQUE)
+*   `password` (VARCHAR) - سيتم تخزينها مشفرة.
+*   `status` (VARCHAR) - (e.g., 'active', 'inactive', 'suspended')
+*   `created_at`, `updated_at`, `deleted_at`
+
+**2. جدول `roles` (الأدوار)**
+*   `id` (PK)
+*   `role_name` (VARCHAR, UNIQUE)
+*   `description` (TEXT, NULLABLE)
+*   `created_at`, `updated_at`, `deleted_at`
+
+**3. جدول `permissions` (الصلاحيات)**
+*   `id` (PK)
+*   `permission_key` (VARCHAR, UNIQUE) - المفتاح البرمجي (e.g., 'users.create', 'properties.delete')
+*   `description` (TEXT, NULLABLE)
+
+**4. جدول `role_permissions` (جدول الربط بين الأدوار والصلاحيات)**
+*   `role_id` (FK to roles.id)
+*   `permission_id` (FK to permissions.id)
+*   *Primary Key (role_id, permission_id)*
+
+**5. جدول `branches` (الفروع)**
+*   `id` (PK)
+*   `branch_name` (VARCHAR)
+*   `branch_code` (VARCHAR, NULLABLE)
+*   `address` (TEXT, NULLABLE)
+*   `phone` (VARCHAR, NULLABLE)
+*   `email` (VARCHAR, NULLABLE)
+*   `status` (VARCHAR) - (e.g., 'active', 'inactive')
+*   `created_at`, `updated_at`, `deleted_at`
+
+**6. جدول `user_branches` (جدول الربط بين المستخدمين والفروع)**
+*   `user_id` (FK to users.id)
+*   `branch_id` (FK to branches.id)
+*   *Primary Key (user_id, branch_id)* - يحدد الفروع التي يمكن للمستخدم الوصول لبياناتها.
+
+**7. جدول `settings` (تهيئة المدخلات - The "God" Table)**
+*   `id` (PK)
+*   `group_key` (VARCHAR) - (e.g., 'property_types', 'contract_statuses')
+*   `option_key` (VARCHAR) - (e.g., 'commercial_center', 'active')
+*   `option_value` (VARCHAR) - (e.g., 'مركز تجاري', 'نشط')
+*   `color` (VARCHAR, NULLABLE)
+*   `custom_fields_schema` (JSON, NULLABLE) - **هنا يكمن سحر مصمم النماذج.**
+*   `created_at`, `updated_at`, `deleted_at`
+
+---
+
+### **القسم الثاني: جداول الكيانات الرئيسية (Core Entity Tables)**
+
+**8. جدول `contacts` (جهات الاتصال)**
+*   `id` (PK)
+*   `contact_type` (VARCHAR) - (e.g., 'individual', 'company')
+*   `full_name` (VARCHAR) - اسم الشخص أو الشركة.
+*   `id_number` (VARCHAR, NULLABLE)
+*   `tax_number` (VARCHAR, NULLABLE)
+*   `primary_phone` (VARCHAR, NULLABLE)
+*   `primary_email` (VARCHAR, NULLABLE)
+*   `address` (TEXT, NULLABLE)
+*   `created_at`, `updated_at`, `deleted_at`
+
+**9. جدول `contact_roles` (أدوار جهات الاتصال)**
+*   `contact_id` (FK to contacts.id)
+*   `role` (VARCHAR) - (e.g., 'client', 'supplier', 'owner', 'employee')
+*   `branch_id` (FK to branches.id) - يحدد تبعية هذا الدور لفرع معين.
+*   *Primary Key (contact_id, role, branch_id)* - جهة الاتصال يمكن أن تكون "عميل" في فرع جدة و "مورد" في فرع الرياض.
+
+---
+
+**ملاحظات هامة:**
+*   هذا المخطط يغطي فقط النواة الإدارية والكيانات. جداول العمليات (مثل `properties`, `contracts`, `invoices`) ستأتي في المرحلة التالية.
+*   تصميم جدول `contacts` و `contact_roles` يطبق فكرتك الذكية حول **"الطرف المتعدد الأدوار"** بشكل مباشر.
+*   جدول `settings` هو النسخة المطورة من `lookup_options` في مشروعك السابق، وهو مصمم ليكون أكثر قوة ومرونة.
+
+هذا هو الهيكل العظمي لقاعدة بياناتنا. هل تراه منطقيًا ويغطي كل احتياجات المراحل الأولى؟ هل هناك أي تعديلات أو إضافات تود اقتراحها قبل أن نعتمد هذا المخطط؟
