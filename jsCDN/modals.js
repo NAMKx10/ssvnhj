@@ -39,21 +39,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 method: form.method,
                 body: new FormData(form),
             })
-            .then(response => {
-    // ✨ سنقوم بفحص الاستجابة قبل تحليلها ✨
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.indexOf("application/json") !== -1) {
-        return response.json();
-    } else {
-        Swal.fire('خطأ!', data.message || 'حدث خطأ غير متوقع.', 'error');
-    }
-})
-.catch((error) => {
-    // ✨ الآن سيعرض لنا الخطأ الفعلي ✨
-    Swal.fire('خطأ!', error.message, 'error');
-})
-    }
-})
+            .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     const modalInstance = bootstrap.Modal.getInstance(mainModal);
