@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(data => {
                 if (data.success) {
-                    const modalInstance = bootstrap.Modal.getInstance(mainModal);
+                    const modalInstance = tabler.bootstrap.Modal.getInstance(mainModal);
                     if (modalInstance) modalInstance.hide();
                     Swal.fire({ title: 'نجاح!', text: data.message, icon: 'success', timer: 1500, showConfirmButton: false })
                         .then(() => location.reload());
