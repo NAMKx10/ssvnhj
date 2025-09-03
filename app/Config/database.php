@@ -1,10 +1,9 @@
 <?php
-// app/Config/database.php
-
+// app/Config/database.php (النسخة المطهرة)
 $db_host = 'localhost:3307';
-$db_name = 'naji_123'; // <-- قم بتغيير هذا
-$db_user = 'naji';         // <-- قم بتغيير هذا إذا لزم الأمر
-$db_pass = '123456';             // <-- قم بتغيير هذا إذا لزم الأمر
+$db_name = 'naji_123';
+$db_user = 'naji';
+$db_pass = '123456';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$db_host;dbname=$db_name;charset=$charset";
