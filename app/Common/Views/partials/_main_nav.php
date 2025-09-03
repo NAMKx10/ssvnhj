@@ -6,7 +6,7 @@ $current_page = $_GET['page'] ?? 'dashboard';
 $entities_pages = ['branches', 'contacts', 'properties', 'units'];
 $contracts_pages = ['contracts', 'supply_contracts'];
 $financial_pages = ['invoices', 'payments', 'financial_reports'];
-$admin_pages = ['users', 'roles', 'settings', 'archive'];
+$admin_pages = ['users', 'roles', 'permissions', 'settings', 'archive'];
 ?>
 <div class="navbar-expand-md">
     <div class="collapse navbar-collapse" id="navbar-menu">
@@ -69,6 +69,7 @@ $admin_pages = ['users', 'roles', 'settings', 'archive'];
                         <div class="dropdown-menu">
                             <a class="dropdown-item" href="index.php?page=users">المستخدمين</a>
                             <a class="dropdown-item" href="index.php?page=roles">الأدوار والصلاحيات</a>
+                            <a class="dropdown-item" href="index.php?page=permissions">إدارة الصلاحيات</a>
                             <a class="dropdown-item" href="#">تهيئة المدخلات</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="#">سجل الحركات</a>

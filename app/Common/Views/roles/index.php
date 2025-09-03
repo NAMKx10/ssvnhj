@@ -6,11 +6,9 @@
                 <h2 class="page-title">إدارة الأدوار والصلاحيات (<?= html($total_records) ?>)</h2>
             </div>
             <div class="col-auto ms-auto d-print-none">
-                <div class="btn-list">
-                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=roles/add&view_only=true">
-                        <i class="ti ti-plus"></i> إضافة دور جديد
-                    </a>
-                </div>
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=roles/add&view_only=true">
+                    <i class="ti ti-plus"></i> إضافة دور جديد
+                </a>
             </div>
         </div>
     </div>
@@ -27,22 +25,32 @@
                             <th>#</th>
                             <th>اسم الدور</th>
                             <th>الوصف</th>
-                            <th class="w-1">الإجراءات</th>
+                            <th>عدد المستخدمين</th>
+                            <th>عدد الصلاحيات</th> <!-- العمود الجديد -->
+                            <th class="w-1"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($roles)): ?>
-                            <tr><td colspan="4" class="text-center p-4">لا توجد أدوار معرفة.</td></tr>
+                            <tr><td colspan="6" class="text-center p-4">لا توجد أدوار معرفة.</td></tr>
                         <?php else: foreach($roles as $role): ?>
                         <tr>
                             <td><span class="text-muted"><?= $role['id'] ?></span></td>
                             <td><?= html($role['role_name']) ?></td>
                             <td><?= html($role['description']) ?></td>
+                            <td><span class="badge bg-blue-lt"><?= $role['users_count'] ?></span></td>
+                            <td><span class="badge bg-green-lt"><?= $role['permissions_count'] ?></span></td> <!-- بيانات العمود الجديد -->
                             <td class="text-end">
-                                <a href="index.php?page=roles/edit&id=<?= $role['id'] ?>" class="btn btn-ghost-primary">
-                                    تعديل الصلاحيات
-                                </a>
-                                <!-- زر الحذف يمكن إضافته لاحقًا -->
+                                <div class="btn-list flex-nowrap">
+                                    <a href="index.php?page=roles/edit&id=<?= $role['id'] ?>" class="btn">
+                                        تعديل الصلاحيات
+                                    </a>
+                                    <?php if ($role['id'] > 3): ?>
+                                        <a href="index.php?page=handle_role_delete&id=<?= $role['id'] ?>" class="btn btn-outline-danger btn-icon confirm-delete" title="حذف الدور">
+                                            <i class="ti ti-trash"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; endif; ?>
