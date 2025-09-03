@@ -68,11 +68,11 @@ $admin_pages = ['users', 'roles', 'settings', 'archive'];
                         </a>
                         <div class="dropdown-menu">
                             <a class="dropdown-item" href="index.php?page=users">المستخدمين</a>
-                            <a class="dropdown-item" href="#">الأدوار والصلاحيات</a>
+                            <a class="dropdown-item" href="index.php?page=roles">الأدوار والصلاحيات</a>
                             <a class="dropdown-item" href="#">تهيئة المدخلات</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="#">سجل الحركات</a>
-                            <a class="dropdown-item" href="#">الأرشيف</a>
+                            <a class="dropdown-item" href="index.php?page=archive">الأرشيف</a>
                             <a class="dropdown-item" href="#">حول النظام</a>
                         </div>
                     </li>

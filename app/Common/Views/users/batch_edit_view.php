@@ -24,6 +24,6 @@
 </div>
 <!-- تمرير البيانات من PHP إلى JavaScript -->
 <script>
-    const initialData = <?= json_encode($users_for_js ?? [], JSON_UNESCAPED_UNICODE) ?>;
-    const rolesSource = <?= json_encode($roles_for_js ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    window.initialData = <?= json_encode($users_for_js ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    window.rolesSource = <?= json_encode($roles_for_js ?? [], JSON_UNESCAPED_UNICODE) ?>;
 </script>
