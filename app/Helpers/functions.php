@@ -214,3 +214,35 @@ function hash_password($password) {
 function verify_password($entered_pw, $hashed_pw) {
     return password_verify($entered_pw, $hashed_pw);
 }
+
+/* ============================= */
+/* دوال خاصة بمعالجات AJAX      */
+/* ============================= */
+
+/**
+ * دالة مساعدة لتحويل اسم الدور إلى ID.
+ * تستخدم static لتجنب الاستعلام المتكرر.
+ * @param PDO $pdo
+ * @param string|null $role_name
+ * @return int
+ */
+function get_role_id_from_name($pdo, $role_name) {
+    static $roles_map = null;
+    if ($roles_map === null) {
+        $roles_map = $pdo->query("SELECT role_name, id FROM roles WHERE deleted_at IS NULL")->fetchAll(PDO::FETCH_KEY_PAIR);
+    }
+    return $roles_map[$role_name] ?? 3; // 3: Data Entry كقيمة افتراضية
+}
+
+/**
+ * دالة مركزية لطباعة استجابة JSON والخروج.
+ * تنظف أي مخرجات سابقة لضمان استجابة نقية.
+ * @param array $data
+ * @return void
+ */
+function json_response($data) {
+    ob_clean(); // <-- مفتاح الحل: مسح أي مخرجات غير مرغوب فيها
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data);
+    exit();
+}
