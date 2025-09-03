@@ -28,7 +28,17 @@ return [
     'roles/edit' => 'Common/Controllers/RoleEditController.php',
     'handle_role_add' => 'Common/Controllers/RoleHandlerController.php',
     'handle_role_edit' => 'Common/Controllers/RoleHandlerController.php',
+    'roles/edit_role_view' => 'Common/Views/roles/edit_role_view.php',
+    'handle_role_edit_details' => 'Common/Controllers/RoleHandlerController.php',
     'handle_role_delete' => 'Common/Controllers/RoleHandlerController.php',
+
+    'permissions' => 'Common/Controllers/PermissionsController.php',
+    'permissions/add_group' => 'Common/Views/permissions/add_group_view.php',
+    'permissions/edit_group' => 'Common/Views/permissions/edit_group_view.php',
+    'permissions/add' => 'Common/Views/permissions/add_permission_view.php',
+    'permissions/edit' => 'Common/Views/permissions/edit_permission_view.php',
+    'handle_permission_actions' => 'Common/Controllers/PermissionHandlerController.php',
+
     
     // سنضيف بقية المسارات هنا لاحقًا
     // 'users' => 'Modules/Users/Controllers/UserController.php',
