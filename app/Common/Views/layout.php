@@ -66,9 +66,9 @@
             </footer>
         </div>
     </div>
-    <!-- Tabler JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js" defer></script>
-    <?php require_once ROOT_PATH . '/app/Common/Views/partials/_footer_scripts.php'; ?>
+
+<!-- الآن قم بتضمين السكريبتات المخصصة بنا -->
+<?php require_once ROOT_PATH . '/app/Common/Views/partials/_footer_scripts.php'; ?>
 
     <!-- مثال تفعيل Alpine.js للتبويبات أو أي تفاعل بسيط -->
     <script>
