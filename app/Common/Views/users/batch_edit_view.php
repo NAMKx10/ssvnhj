@@ -22,8 +22,32 @@
         </div>
     </div>
 </div>
-<!-- تمرير البيانات من PHP إلى JavaScript -->
+
+<!-- ▼▼▼ التعديل هنا ▼▼▼ -->
+<!-- تمرير الإعدادات الخاصة بجدول تعديل المستخدمين إلى JavaScript -->
 <script>
-    window.initialData = <?= json_encode($users_for_js ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    // تمرير البيانات الأولية التي سيتم عرضها في الجدول
+    window.initialData = <?= json_encode($users_data ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    
+    // تمرير الإعدادات اللازمة للجافاسكريبت العام
+    window.saveUrl = 'index.php?page=handle_users_batch_edit';
+    window.formAction = 'batch_edit_user';
+    
+    // تمرير قائمة الأدوار كمصدر للقائمة المنسدلة
     window.rolesSource = <?= json_encode($roles_for_js ?? [], JSON_UNESCAPED_UNICODE) ?>;
+
+    // تعريف عناوين الأعمدة وترتيبها
+    window.colHeaders = ['ID', 'الاسم الكامل*', 'اسم المستخدم*', 'الدور', 'الحالة', 'الإيميل', 'الجوال'];
+    
+    // تعريف نوع كل عمود
+    window.columnsConfig = [
+        { data: 0, readOnly: true }, // ID
+        { data: 1 },                 // Full Name
+        { data: 2 },                 // Username
+        { data: 3, type: 'dropdown', source: window.rolesSource }, // Role
+        { data: 4, type: 'dropdown', source: ['active', 'inactive'] }, // Status
+        { data: 5 },                 // Email
+        { data: 6 }                  // Mobile
+    ];
 </script>
+<!-- ▲▲▲ نهاية التعديل ▲▲▲ -->

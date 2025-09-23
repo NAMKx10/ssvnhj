@@ -1,3 +1,6 @@
+
+<!-- app/Common/Views/roles/index.php -->
+
 <!-- رأس الصفحة -->
 <div class="page-header d-print-none">
     <div class="container-xl">
@@ -6,9 +9,13 @@
                 <h2 class="page-title">إدارة الأدوار والصلاحيات (<?= html($total_records) ?>)</h2>
             </div>
             <div class="col-auto ms-auto d-print-none">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=roles/add&view_only=true">
-                    <i class="ti ti-plus"></i> إضافة دور جديد
-                </a>
+
+                    <?php if (has_permission('add_role')): ?>
+        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=roles/add&view_only=true">
+            <i class="ti ti-plus"></i> إضافة دور جديد
+        </a>
+    <?php endif; ?>
+
             </div>
         </div>
     </div>
@@ -42,14 +49,19 @@
                             <td><span class="badge bg-green-lt"><?= $role['permissions_count'] ?></span></td> <!-- بيانات العمود الجديد -->
                             <td class="text-end">
                                 <div class="btn-list flex-nowrap">
-                                    <a href="index.php?page=roles/edit&id=<?= $role['id'] ?>" class="btn">
-                                        تعديل الصلاحيات
-                                    </a>
-                                    <?php if ($role['id'] > 3): ?>
-                                        <a href="index.php?page=handle_role_delete&id=<?= $role['id'] ?>" class="btn btn-outline-danger btn-icon confirm-delete" title="حذف الدور">
-                                            <i class="ti ti-trash"></i>
-                                        </a>
-                                    <?php endif; ?>
+        <?php if (has_permission('edit_role_permissions')): ?>
+            <a href="index.php?page=roles/edit&id=<?= $role['id'] ?>" class="btn">
+                تعديل الصلاحيات
+            </a>
+        <?php endif; ?>
+
+        <?php if (has_permission('delete_role') && $role['id'] > 3): ?>
+            <a href="index.php?page=handle_role_delete&id=<?= $role['id'] ?>" class="btn btn-outline-danger btn-icon confirm-delete" title="حذف الدور">
+                <i class="ti ti-trash"></i>
+            </a>
+        <?php endif; ?>
+
+
                                 </div>
                             </td>
                         </tr>

@@ -30,14 +30,22 @@
                             <div class="accordion-body">
                                 <form method="POST" action="index.php?page=archive">
                                     <input type="hidden" name="table" value="<?= $table ?>">
-                                    <div class="d-flex gap-2 mb-3">
-                                        <select name="action" class="form-select" style="width: auto;" required>
-                                            <option value="">-- إجراء جماعي --</option>
-                                            <option value="restore">استعادة المحدد</option>
-                                            <option value="force_delete">حذف نهائي للمحدد</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-primary">تنفيذ</button>
-                                    </div>
+                                    <!-- ▼▼▼ التعديل هنا ▼▼▼ -->
+                                    <?php if (has_permission('restore_from_archive') || has_permission('force_delete_from_archive')): ?>
+                                        <div class="d-flex gap-2 mb-3">
+                                            <select name="action" class="form-select" style="width: auto;" required>
+                                                <option value="">-- إجراء جماعي --</option>
+                                                <?php if (has_permission('restore_from_archive')): ?>
+                                                    <option value="restore">استعادة المحدد</option>
+                                                <?php endif; ?>
+                                                <?php if (has_permission('force_delete_from_archive')): ?>
+                                                    <option value="force_delete">حذف نهائي للمحدد</option>
+                                                <?php endif; ?>
+                                            </select>
+                                            <button type="submit" class="btn btn-primary">تنفيذ</button>
+                                        </div>
+                                    <?php endif; ?>
+                                    <!-- ▲▲▲ نهاية التعديل ▲▲▲ -->
                                     <div class="table-responsive">
                                         <table class="table card-table table-vcenter text-nowrap">
                                             <thead>
@@ -55,8 +63,16 @@
                                                     <td><?= html($item['name'] ?: "ID: " . $item['id']) ?></td>
                                                     <td><span class="text-muted"><?= format_date($item['deleted_at'], 'Y-m-d H:i') ?></span></td>
                                                     <td class="text-end">
-                                                        <a href="index.php?page=archive&action=restore&table=<?= $table ?>&id=<?= $item['id'] ?>" class="btn btn-sm btn-ghost-success">استعادة</a>
-                                                        <a href="index.php?page=archive&action=force_delete&table=<?= $table ?>&id=<?= $item['id'] ?>" class="btn btn-sm btn-ghost-danger confirm-delete-permanent">حذف</a>
+                                                        <!-- ▼▼▼ التعديل هنا ▼▼▼ -->
+                                                        <div class="btn-list flex-nowrap">
+                                                            <?php if (has_permission('restore_from_archive')): ?>
+                                                                <a href="index.php?page=archive&action=restore&table=<?= $table ?>&id=<?= $item['id'] ?>" class="btn btn-sm btn-ghost-success">استعادة</a>
+                                                            <?php endif; ?>
+                                                            <?php if (has_permission('force_delete_from_archive')): ?>
+                                                                <a href="index.php?page=archive&action=force_delete&table=<?= $table ?>&id=<?= $item['id'] ?>" class="btn btn-sm btn-ghost-danger confirm-delete-permanent">حذف</a>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <!-- ▲▲▲ نهاية التعديل ▲▲▲ -->
                                                     </td>
                                                 </tr>
                                                 <?php endforeach; ?>

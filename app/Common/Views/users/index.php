@@ -10,12 +10,14 @@
                     <a href="#" class="btn"><i class="ti ti-upload me-2"></i> استيراد</a>
                     <a href="#" class="btn"><i class="ti ti-download me-2"></i> تصدير</a>
                     <a href="#" class="btn"><i class="ti ti-printer me-2"></i> طباعة</a>
-                    <a href="index.php?page=users/batch_add" class="btn btn-primary">
-    <i class="ti ti-table-plus me-2"></i> إضافة جماعية
-</a>
-                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=users/add&view_only=true">
-                        <i class="ti ti-plus"></i> إضافة مستخدم
-                    </a>
+                    <?php if (has_permission('add_user')): ?>
+            <a href="index.php?page=users/batch_add" class="btn btn-primary">
+                <i class="ti ti-table-plus me-2"></i> إضافة جماعية
+            </a>
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=users/add&view_only=true">
+                <i class="ti ti-plus"></i> إضافة مستخدم
+            </a>
+        <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -89,7 +91,7 @@
                             <tr><td colspan="7" class="text-center p-4">لا توجد نتائج.</td></tr>
                         <?php else: $i = $offset + 1; foreach($users as $user): ?>
                         <tr>
-                            <td><input class="form-check-input m-0 align-middle" type="checkbox" name="row_id[]" value="<?= $user['id'] ?>"></td>
+                            <td><input class="form-check-input m-0 align-middle" type="checkbox" name="ids[]" value="<?= $user['id'] ?>"></td>
                             <td><span class="text-muted"><?= $i++ ?></span></td>
                             <td>
                                 <div><?= htmlspecialchars($user['full_name']) ?></div>
@@ -106,22 +108,27 @@
                             </td>
                             <td class="text-end">
                                 <div class="btn-list flex-nowrap">
-                                    <a href="#" class="btn btn-ghost-primary btn-icon" title="تعديل" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=users/edit&id=<?= $user['id'] ?>&view_only=true">
-                                        <i class="ti ti-pencil"></i>
-                                    </a>
-                                    <div class="dropdown">
-    <button class="btn dropdown-toggle align-text-top" data-bs-toggle="dropdown" data-bs-placement="bottom-end">
-        الإجراءات
-    </button>
-    <div class="dropdown-menu dropdown-menu-end">
-        <a class="dropdown-item" href="#">
-            <i class="ti ti-history me-2"></i> عرض حركات المستخدم
-        </a>
-        <a class="dropdown-item text-danger confirm-delete" href="index.php?page=handle_user_delete&id=<?= $user['id'] ?>">
-            <i class="ti ti-trash me-2"></i> حذف (أرشفة)
-        </a>
-    </div>
-</div>
+                                    <?php if (has_permission('edit_user')): ?>
+            <a href="#" class="btn btn-ghost-primary btn-icon" title="تعديل" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=users/edit&id=<?= $user['id'] ?>&view_only=true">
+                <i class="ti ti-pencil"></i>
+            </a>
+        <?php endif; ?>
+
+        <?php if (has_permission('delete_user')): ?>
+            <div class="dropdown">
+                <button class="btn dropdown-toggle align-text-top" data-bs-toggle="dropdown">
+                    الإجراءات
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <a class="dropdown-item" href="#">
+                        <i class="ti ti-history me-2"></i> عرض حركات المستخدم
+                    </a>
+                    <a class="dropdown-item text-danger confirm-delete" href="index.php?page=handle_user_delete&id=<?= $user['id'] ?>">
+                        <i class="ti ti-trash me-2"></i> حذف (أرشفة)
+                    </a>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
                             </td>
                         </tr>
@@ -134,32 +141,43 @@
             <!-- تذييل الجدول -->
             <div class="card-footer d-flex align-items-center justify-content-between">
     <div class="d-flex align-items-center">
-        <div class="dropdown">
-    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        إجراءات جماعية
-    </button>
-    <div class="dropdown-menu">
-            <a class="dropdown-item" href="#" onclick="redirectToBatchEdit()">
-        <i class="ti ti-pencil me-2"></i> تعديل جماعي
-    </a>
+ 
+    <?php if (has_permission('edit_user') || has_permission('delete_user')): ?>
+    <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            إجراءات جماعية
+        </button>
+        <div class="dropdown-menu">
+            <?php if (has_permission('edit_user')): ?>
+                <a class="dropdown-item" href="#" onclick="redirectToBatchEdit('users', 'batch_edit')">
+    <i class="ti ti-pencil me-2"></i> تعديل جماعي
+</a>
+                <a class="dropdown-item" href="#" onclick="submitBatchAction('activate', 'batch-form')">
+    <i class="ti ti-user-check me-2"></i> تفعيل المحدد
+</a>
+                <a class="dropdown-item" href="#" onclick="submitBatchAction('deactivate', 'batch-form')">
+    <i class="ti ti-user-x me-2"></i> تعطيل المحدد
+</a>
 
-        <a class="dropdown-item" href="#" onclick="submitBatchAction('activate')">
-            <i class="ti ti-user-check me-2"></i> تفعيل المحدد
-        </a>
-        <a class="dropdown-item" href="#" onclick="submitBatchAction('deactivate')">
-            <i class="ti ti-user-x me-2"></i> تعطيل المحدد
-        </a>
-        <div class="dropdown-divider"></div>
-        <a class="dropdown-item text-danger" href="#" onclick="submitBatchAction('soft_delete')">
-            <i class="ti ti-trash me-2"></i> أرشفة المحدد
-        </a>
+            <?php endif; ?>
+
+            <?php if (has_permission('edit_user') && has_permission('delete_user')): ?>
+                <div class="dropdown-divider"></div>
+            <?php endif; ?>
+
+            <?php if (has_permission('delete_user')): ?>
+                <a class="dropdown-item text-danger" href="#" onclick="submitBatchAction('soft_delete', 'batch-form')">
+    <i class="ti ti-trash me-2"></i> أرشفة المحدد
+</a>
+            <?php endif; ?>
+        </div>
     </div>
-</div>
-        <select class="form-select form-select-sm ms-2" style="width: 80px;">
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-        </select>
+<?php endif; ?>
+        <select class="form-select form-select-sm ms-2" style="width: 80px;" onchange="window.location.href = '?page=users&limit=' + this.value;">
+    <option value="10" <?= ($limit == 10) ? 'selected' : '' ?>>10</option>
+    <option value="20" <?= ($limit == 20) ? 'selected' : '' ?>>20</option>
+    <option value="50" <?= ($limit == 50) ? 'selected' : '' ?>>50</option>
+</select>
     </div>
     <div class="m-auto"><?php render_pagination($current_page, $total_pages, $_GET); ?></div>
     <p class="m-0 text-muted">عرض <span><?= count($users) ?></span> من <span><?= $total_records ?></span> سجل</p>

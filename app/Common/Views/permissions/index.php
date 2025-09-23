@@ -3,11 +3,13 @@
     <div class="container-xl">
         <div class="row g-2 align-items-center">
             <div class="col"><h2 class="page-title">إدارة الصلاحيات والمجموعات</h2></div>
-            <div class="col-auto ms-auto d-print-none">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=permissions/add_group&view_only=true">
-                    <i class="ti ti-plus me-2"></i>إضافة مجموعة جديدة
-                </a>
-            </div>
+            <?php if (has_permission('add_permission_group')): ?>
+                <div class="col-auto ms-auto d-print-none">
+                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=permissions/add_group&view_only=true">
+                        <i class="ti ti-plus me-2"></i>إضافة مجموعة جديدة
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -40,11 +42,19 @@
                                 <code class="text-muted d-block mt-1"><?= html($active_group['group_key']) ?></code>
                             </div>
                             <div class="card-actions">
-                                <a href="#" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=permissions/edit_group&id=<?= $active_group_id ?>&view_only=true">تعديل</a>
-                                <a href="index.php?page=handle_permission_actions&action=delete_group&id=<?= $active_group['id'] ?>" class="btn btn-outline-danger confirm-delete">حذف</a>
-                                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=permissions/add&group_id=<?= $active_group_id ?>&view_only=true">
-                                    <i class="ti ti-plus me-1"></i> إضافة صلاحية
-                                </a>
+
+                                <?php if (has_permission('edit_permission_group')): ?>
+                                    <a href="#" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=permissions/edit_group&id=<?= $active_group_id ?>&view_only=true">تعديل</a>
+                                <?php endif; ?>
+                                <?php if (has_permission('delete_permission_group')): ?>
+                                    <a href="index.php?page=handle_permission_actions&action=delete_group&id=<?= $active_group['id'] ?>" class="btn btn-outline-danger confirm-delete">حذف</a>
+                                <?php endif; ?>
+                                <?php if (has_permission('add_permission')): ?>
+                                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=permissions/add&group_id=<?= $active_group_id ?>&view_only=true">
+                                        <i class="ti ti-plus me-1"></i> إضافة صلاحية
+                                    </a>
+                                <?php endif; ?>
+
                             </div>
                         </div>
                         <div class="table-responsive">
@@ -58,8 +68,12 @@
                                             <td><?= html($permission['description']) ?></td>
                                             <td><code><?= html($permission['permission_key']) ?></code></td>
                                             <td class="text-end">
-                                                <a href="#" class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=permissions/edit&id=<?= $permission['id'] ?>&view_only=true">تعديل</a>
-                                                <a href="index.php?page=handle_permission_actions&action=delete_permission&id=<?= $permission['id'] ?>" class="btn btn-sm btn-outline-danger confirm-delete">حذف</a>
+                                                <?php if (has_permission('edit_permission')): ?>
+                                                    <a href="#" class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#main-modal" data-bs-url="index.php?page=permissions/edit&id=<?= $permission['id'] ?>&view_only=true">تعديل</a>
+                                                <?php endif; ?>
+                                                <?php if (has_permission('delete_permission')): ?>
+                                                    <a href="index.php?page=handle_permission_actions&action=delete_permission&id=<?= $permission['id'] ?>" class="btn btn-sm btn-outline-danger confirm-delete">حذف</a>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; endif; ?>
