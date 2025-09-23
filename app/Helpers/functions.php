@@ -96,9 +96,9 @@ function has_permission($permission_key) {
     }
 
     // إذا كان المستخدم هو Super Admin (بناءً على الدور)، امنحه كل الصلاحيات
-    // if (isset($_SESSION['user_role_name']) && $_SESSION['user_role_name'] === 'Super Admin') {
-    //     return true;
-    // }
+    if (isset($_SESSION['user_role_name']) && $_SESSION['user_role_name'] === 'Super Admin') {
+         return true;
+     }
 
     // تحقق مما إذا كانت الصلاحية مطلوبة موجودة في مصفوفة صلاحيات المستخدم
     if (in_array($permission_key, $_SESSION['user_permissions'])) {
@@ -246,3 +246,45 @@ function json_response($data) {
     echo json_encode($data);
     exit();
 }
+
+function soft_delete_recursive($pdo, $ids) {
+    $initial_ids = (array)$ids;
+    if (empty($initial_ids)) {
+        return;
+    }
+
+    $all_ids_to_delete = $initial_ids;
+    $folders_to_check = $initial_ids;
+
+    // حلقة لجمع كل المجلدات الفرعية
+    while (!empty($folders_to_check)) {
+        $placeholders = implode(',', array_fill(0, count($folders_to_check), '?'));
+        
+        $stmt = $pdo->prepare("SELECT id FROM files WHERE parent_id IN ($placeholders) AND file_type = 'folder' AND deleted_at IS NULL");
+        $stmt->execute($folders_to_check);
+        $child_folder_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (!empty($child_folder_ids)) {
+            $all_ids_to_delete = array_merge($all_ids_to_delete, $child_folder_ids);
+            $folders_to_check = $child_folder_ids;
+        } else {
+            $folders_to_check = [];
+        }
+    }
+
+    // الآن، ابحث عن كل الملفات الموجودة داخل كل المجلدات التي جمعناها
+    $placeholders = implode(',', array_fill(0, count($all_ids_to_delete), '?'));
+    $files_stmt = $pdo->prepare("SELECT id FROM files WHERE parent_id IN ($placeholders) AND file_type = 'file' AND deleted_at IS NULL");
+    $files_stmt->execute($all_ids_to_delete);
+    $child_file_ids = $files_stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // ادمج كل الـ IDs معًا (المجلدات الأصلية + المجلدات الفرعية + الملفات الفرعية)
+    $final_ids_to_delete = array_unique(array_merge($all_ids_to_delete, $child_file_ids));
+    
+    if (!empty($final_ids_to_delete)) {
+        $placeholders = implode(',', array_fill(0, count($final_ids_to_delete), '?'));
+        $update_stmt = $pdo->prepare("UPDATE files SET deleted_at = NOW() WHERE id IN ($placeholders)");
+        $update_stmt->execute(array_values($final_ids_to_delete));
+    }
+}
+
