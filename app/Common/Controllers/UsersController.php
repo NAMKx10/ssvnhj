@@ -70,7 +70,7 @@ $users = $data_stmt->fetchAll();
 
 // --- 6. جلب بيانات الفلاتر (الأدوار والحالات) ---
 $roles_list = $pdo->query("SELECT id, role_name FROM roles WHERE deleted_at IS NULL ORDER BY role_name")->fetchAll();
-$statuses_list = $pdo->query("SELECT option_key, option_value FROM settings WHERE group_key = 'status' AND deleted_at IS NULL")->fetchAll(PDO::FETCH_KEY_PAIR);
+$statuses_list = $pdo->query("SELECT option_key, option_value FROM settings WHERE group_id = 'status' AND deleted_at IS NULL")->fetchAll(PDO::FETCH_KEY_PAIR);
 
 // --- 7. تمرير البيانات إلى الواجهة ---
 require_once ROOT_PATH . '/app/Common/Views/users/index.php';

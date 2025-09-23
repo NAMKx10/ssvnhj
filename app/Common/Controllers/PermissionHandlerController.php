@@ -1,5 +1,5 @@
 <?php
-// app/Common/Controllers/PermissionHandlerController.php (النسخة الموحدة)
+// app/Common/Controllers/PermissionHandlerController.php (النسخة النهائية المؤمنة)
 global $pdo;
 
 if (!function_exists('json_response')) { die("Error: Core helper functions are not loaded."); }
@@ -8,10 +8,17 @@ $action = $_REQUEST['form_action'] ?? $_REQUEST['action'] ?? '';
 
 // --- معالجة طلبات الحذف (التي تأتي من روابط عادية) ---
 if ($action === 'delete_group' || $action === 'delete_permission') {
+    // ▼▼▼ التأمين هنا ▼▼▼
+    $required_permission = ($action === 'delete_group') ? 'delete_permission_group' : 'delete_permission';
+    if (!has_permission($required_permission)) {
+        die('Access Denied.');
+    }
+    // ▲▲▲ نهاية التأمين ▲▲▲
+
     $id = (int)($_GET['id'] ?? 0);
     if ($id > 0) {
         $table = ($action === 'delete_group') ? 'permission_groups' : 'permissions';
-        soft_delete($pdo, $table, $id); // <-- استخدام الدالة المركزية
+        soft_delete($pdo, $table, $id);
     }
     header("Location: " . ($_SERVER['HTTP_REFERER'] ?? 'index.php?page=permissions'));
     exit();
@@ -22,6 +29,8 @@ if ($action === 'delete_group' || $action === 'delete_permission') {
 try {
     switch ($action) {
         case 'add_group':
+            if (!has_permission('add_permission_group')) { json_response(['success' => false, 'message' => 'ليس لديك الصلاحية المطلوبة.']); }
+            
             $pdo->beginTransaction();
             $group_name = trim($_POST['group_name'] ?? '');
             $group_key = trim($_POST['group_key'] ?? '');
@@ -35,6 +44,8 @@ try {
             break;
 
         case 'edit_group':
+            if (!has_permission('edit_permission_group')) { json_response(['success' => false, 'message' => 'ليس لديك الصلاحية المطلوبة.']); }
+
             $pdo->beginTransaction();
             $id = (int)($_POST['id'] ?? 0);
             $group_name = trim($_POST['group_name'] ?? '');
@@ -49,6 +60,8 @@ try {
             break;
 
         case 'add_permission':
+            if (!has_permission('add_permission')) { json_response(['success' => false, 'message' => 'ليس لديك الصلاحية المطلوبة.']); }
+
             $pdo->beginTransaction();
             $group_id = (int)($_POST['group_id'] ?? 0);
             $description = trim($_POST['description'] ?? '');
@@ -63,6 +76,8 @@ try {
             break;
         
         case 'edit_permission':
+            if (!has_permission('edit_permission')) { json_response(['success' => false, 'message' => 'ليس لديك الصلاحية المطلوبة.']); }
+
             $pdo->beginTransaction();
             $id = (int)($_POST['id'] ?? 0);
             $description = trim($_POST['description'] ?? '');
@@ -77,17 +92,13 @@ try {
             break;
 
         default:
-            // إذا كان الطلب من نوع AJAX ولكنه غير معروف
             if (!empty($_POST)) {
                  json_response(['success' => false, 'message' => 'الإجراء المطلوب غير معروف.']);
             }
             break;
     }
-
 } catch (PDOException $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
+    if ($pdo->inTransaction()) { $pdo->rollBack(); }
     $message = (isset($e->errorInfo[1]) && $e->errorInfo[1] == 1062)
         ? 'المفتاح البرمجي الذي أدخلته موجود بالفعل.'
         : 'حدث خطأ في قاعدة البيانات.';

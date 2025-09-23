@@ -17,6 +17,10 @@ $tables_map = [
     // =============================================
     // الكيانات وجهات الاتصال (Entities & Contacts)
     // =============================================
+
+    'setting_groups'    => ['display' => 'مجموعات الإعدادات',   'name_col' => 'group_name'],
+    'settings'          => ['display' => 'خيارات الإعدادات',    'name_col' => 'option_value'],
+
     // ملاحظة: سنفترض وجود جدول مركزي `contacts` يخدم كل الأطراف
     'contacts'          => ['display' => 'جهات الاتصال (عملاء، موردون، ...)', 'name_col' => 'full_name'],
 
@@ -57,6 +61,20 @@ $tables_map = [
 $action = $_REQUEST['action'] ?? null;
 
 if ($action) {
+        // تحديد الصلاحية المطلوبة بناءً على الإجراء
+    $required_permission = '';
+    if ($action === 'restore') {
+        $required_permission = 'restore_from_archive';
+    } elseif ($action === 'force_delete') {
+        $required_permission = 'force_delete_from_archive';
+    }
+
+    // التحقق من الصلاحية قبل أي شيء آخر
+    if (empty($required_permission) || !has_permission($required_permission)) {
+        // يمكنك هنا عرض صفحة "Access Denied" أو مجرد إيقاف التنفيذ
+        die('Access Denied. You do not have the required permission.');
+    }
+
     $table = $_REQUEST['table'] ?? null;
     $ids = (array)($_REQUEST['ids'] ?? $_GET['id'] ?? []);
     

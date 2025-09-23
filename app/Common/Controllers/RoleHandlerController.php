@@ -10,6 +10,9 @@ if (!empty($_POST)) {
     try {
         switch ($action) {
             case 'handle_role_add':
+                if (!has_permission('add_role')) {
+        json_response(['success' => false, 'message' => 'ليس لديك الصلاحية المطلوبة.']);
+    }
                 $pdo->beginTransaction();
                 $role_name = trim($_POST['role_name'] ?? '');
                 if (empty($role_name)) { json_response(['success' => false, 'message' => 'اسم الدور مطلوب.']); }
@@ -21,6 +24,9 @@ if (!empty($_POST)) {
                 break;
 
             case 'handle_role_edit':
+                if (!has_permission('edit_role_permissions')) {
+        json_response(['success' => false, 'message' => 'ليس لديك الصلاحية المطلوبة.']);
+    }
                 $pdo->beginTransaction();
                 $role_id = (int)($_POST['role_id'] ?? 0);
                 $permissions = (array)($_POST['permissions'] ?? []);
@@ -49,6 +55,9 @@ if (!empty($_POST)) {
                 break;
 
                 case 'handle_role_edit_details':
+                    if (!has_permission('edit_role_permissions')) {
+        json_response(['success' => false, 'message' => 'ليس لديك الصلاحية المطلوبة.']);
+    }
                 $pdo->beginTransaction();
                 $id = (int)($_POST['id'] ?? 0);
                 $role_name = trim($_POST['role_name'] ?? '');
@@ -81,6 +90,9 @@ if (!empty($_POST)) {
 
 // --- معالجة طلبات الحذف (روابط عادية) ---
 if ($action === 'handle_role_delete') {
+    if (!has_permission('delete_role')) {
+        die('Access Denied.');
+    }
     $id = (int)($_GET['id'] ?? 0);
     // حماية الأدوار الأساسية من الحذف
     if ($id > 3) {
