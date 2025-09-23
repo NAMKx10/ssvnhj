@@ -20,6 +20,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 })
                 .then(html => {
                     modalContent.innerHTML = html;
+
+                    if (typeof Alpine !== 'undefined') {
+                        Alpine.init(modalContent);
+                    }
+
                     if (typeof initializeTomSelect === 'function') {
                         initializeTomSelect(modalContent);
                     }

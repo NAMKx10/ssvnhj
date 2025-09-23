@@ -1,5 +1,5 @@
 /**
- * دوال مساعدة عامة لكل صفحات النظام.
+ * public/assets/js/helpers.js (النسخة المطورة)
  */
 
 /**
@@ -7,9 +7,14 @@
  * @param {HTMLInputElement} source 
  */
 function toggleAllCheckboxes(source) {
-    document.querySelectorAll('input[name="row_id[]"]').forEach(checkbox => {
-        checkbox.checked = source.checked;
-    });
+    // ابحث عن أقرب جدول يحتوي على هذا الزر
+    const table = source.closest('table');
+    if (table) {
+        // حدد كل مربعات الاختيار داخل هذا الجدول فقط
+        table.querySelectorAll('input[name="ids[]"]').forEach(checkbox => {
+            checkbox.checked = source.checked;
+        });
+    }
 }
 
 /**
@@ -28,3 +33,21 @@ function initializeTomSelect(context) {
         }
     });
 }
+
+// دالة لتحديث ظهور شريط الإجراءات الجماعية
+function updateBatchActionsToolbar() {
+    const toolbar = document.getElementById('batch-actions-toolbar');
+    const countEl = document.getElementById('selected-count');
+    const checked = document.querySelectorAll('#batch-form input[name="ids[]"]:checked');
+
+    if (toolbar && countEl) {
+        if (checked.length > 0) {
+            toolbar.style.display = 'block';
+            countEl.textContent = checked.length;
+        } else {
+            toolbar.style.display = 'none';
+        }
+    }
+}
+
+
